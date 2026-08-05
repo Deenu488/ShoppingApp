@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -27,6 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -35,6 +37,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -318,10 +321,8 @@ fun DashBox(
     Box(
         modifier =
             modifier
-                // 1. Clip the background so it matches the rounded border corners
                 .clip(RoundedCornerShape(cornerRadius))
                 .background(MaterialTheme.colorScheme.background)
-                // 2. Apply clickable after clip so ripple stays within corners
                 .then(
                     if (onClick != null) {
                         Modifier.clickable(onClick = onClick)
@@ -329,7 +330,6 @@ fun DashBox(
                         Modifier
                     },
                 ).drawBehind {
-                    // 3. Convert dp to px so strokes & dashes scale correctly on all screen densities
                     val strokeWidthPx = 2.dp.toPx()
                     val dashPx = 6.dp.toPx()
                     val dashStroke =
@@ -352,7 +352,8 @@ fun DashBox(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreenFull() {
-    val context = LocalContext.current
+    // 1. Single source of truth for visibility
+    var showBottomSheet by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -364,43 +365,98 @@ fun HomeScreenFull() {
         },
         containerColor = MaterialTheme.colorScheme.surface,
     ) { innerPadding ->
-        // Top-left & Top-right rounded Surface/Box
         Surface(
             modifier =
                 Modifier
                     .fillMaxSize()
                     .padding(innerPadding),
             shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant,
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
         ) {
             DashBox(
                 modifier =
                     Modifier
                         .fillMaxSize()
-                        // Margin inside the rounded view so DashBox doesn't touch the outer edges
                         .padding(16.dp),
                 cornerRadius = 16.dp,
                 onClick = {
-                    Toast
-                        .makeText(context, "DashBox clicked!", Toast.LENGTH_SHORT)
-                        .show()
+                    showBottomSheet = true
                 },
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    Spacer(modifier = Modifier.height(8.dp))
-
                     Button(
                         onClick = {
-                            Toast
-                                .makeText(context, "Add View clicked!", Toast.LENGTH_SHORT)
-                                .show()
+                            showBottomSheet = true
                         },
                     ) {
                         Text(text = "Add")
                     }
+                }
+            }
+        }
+
+        val gridItemModifier =
+            Modifier
+                .fillMaxWidth()
+                .height(100.dp) // Sabhi items ki height yahan se fix aur equal ho jayegi
+
+        val composableItems =
+            listOf<@Composable () -> Unit>(
+                {
+                    DashBox(modifier = gridItemModifier) {
+                        Text(text = "Text")
+                    }
+                },
+                {
+                    DashBox(modifier = gridItemModifier) {
+                        Button(onClick = {}) { Text("Button") }
+                    }
+                },
+            )
+
+        // 2. Only compose the BottomSheet when showBottomSheet is true
+        if (showBottomSheet) {
+            BottomSheet(
+                composableItems = composableItems,
+                onDismiss = { showBottomSheet = false },
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BottomSheet(
+    composableItems: List<@Composable () -> Unit>,
+    onDismiss: () -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState()
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        dragHandle = null, // 1. Setting this to null removes the top drag handle bar
+    ) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    // 2. Added extra top padding (24.dp) so the content doesn't sit too close to the top edge
+                    .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 140.dp),
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                items(composableItems.size) { index ->
+                    composableItems[index]()
                 }
             }
         }
