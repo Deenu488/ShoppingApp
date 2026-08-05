@@ -99,6 +99,6 @@ dependencies {
 }
 
 tasks.register('copyDependencies', Copy) {
-    from configurations.runtimeClasspath
+    from configurations.releaseRuntimeClasspath    
     into layout.buildDirectory.dir("dependencies")
 }
