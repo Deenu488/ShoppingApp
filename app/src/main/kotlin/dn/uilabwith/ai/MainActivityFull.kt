@@ -3,6 +3,7 @@ package dn.uilabwith.ai
 import android.app.Activity
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -10,14 +11,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -306,6 +312,7 @@ fun Main() {
 fun DashBox(
     modifier: Modifier = Modifier,
     cornerRadius: Dp = 8.dp,
+    onClick: (() -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
     Box(
@@ -314,8 +321,15 @@ fun DashBox(
                 // 1. Clip the background so it matches the rounded border corners
                 .clip(RoundedCornerShape(cornerRadius))
                 .background(MaterialTheme.colorScheme.background)
-                .drawBehind {
-                    // 2. Convert dp to px so strokes & dashes scale correctly on all screen densities
+                // 2. Apply clickable after clip so ripple stays within corners
+                .then(
+                    if (onClick != null) {
+                        Modifier.clickable(onClick = onClick)
+                    } else {
+                        Modifier
+                    },
+                ).drawBehind {
+                    // 3. Convert dp to px so strokes & dashes scale correctly on all screen densities
                     val strokeWidthPx = 2.dp.toPx()
                     val dashPx = 6.dp.toPx()
                     val dashStroke =
@@ -338,6 +352,8 @@ fun DashBox(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreenFull() {
+    val context = LocalContext.current
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -355,21 +371,37 @@ fun HomeScreenFull() {
                     .fillMaxSize()
                     .padding(innerPadding),
             shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerHighest,
+            color = MaterialTheme.colorScheme.surfaceVariant,
         ) {
             DashBox(
                 modifier =
                     Modifier
                         .fillMaxSize()
-                        // 3. Margin inside the rounded view so DashBox doesn't touch the outer edges
+                        // Margin inside the rounded view so DashBox doesn't touch the outer edges
                         .padding(16.dp),
                 cornerRadius = 16.dp,
+                onClick = {
+                    Toast
+                        .makeText(context, "DashBox clicked!", Toast.LENGTH_SHORT)
+                        .show()
+                },
             ) {
-                Text(
-                    text = "Welcome Home!",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Button(
+                        onClick = {
+                            Toast
+                                .makeText(context, "Add View clicked!", Toast.LENGTH_SHORT)
+                                .show()
+                        },
+                    ) {
+                        Text(text = "Add")
+                    }
+                }
             }
         }
     }
