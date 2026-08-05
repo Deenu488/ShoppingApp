@@ -20,7 +20,7 @@
             android:name="REQUIRE_SECURE_ENV"
             android:value="1"/>
         <activity
-            android:name=".ui.activities.SplashActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

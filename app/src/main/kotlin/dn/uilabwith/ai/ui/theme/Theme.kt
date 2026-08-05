@@ -1,4 +1,4 @@
-package dn.composeuilab.ui.theme
+package dn.uilabwith.ai.ui.theme
 
 import android.app.Activity
 import android.os.Build

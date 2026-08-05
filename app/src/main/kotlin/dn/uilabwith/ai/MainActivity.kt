@@ -1,9 +1,9 @@
-package dn.composeuilab.ui.activities
+package dn.uilabwith.ai
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import dn.composeuilab.ui.theme.AppTheme
+import dn.uilabwith.ai.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

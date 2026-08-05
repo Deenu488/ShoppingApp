@@ -1,4 +1,4 @@
-package dn.composeuilab.ui.theme
+package dn.uilabwith.ai.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
