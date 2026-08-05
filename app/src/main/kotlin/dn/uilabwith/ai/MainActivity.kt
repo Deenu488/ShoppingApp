@@ -81,7 +81,7 @@ fun HomeScreen() {
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text(text = "Home Title")
+                    Text(text = "UiLabwithAI")
                 },
             )
         },
