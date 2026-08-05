@@ -98,7 +98,59 @@ dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }
 
-tasks.register('copyDependencies', Copy) {
-    from configurations.releaseRuntimeClasspath    
-    into layout.buildDirectory.dir("dependencies")
+tasks.register('copyDependencies') {
+    def classpathFiles = configurations.releaseRuntimeClasspath
+    def outputDirProvider = layout.buildDirectory.dir("dependencies")
+
+    doLast {
+        def targetDir = outputDirProvider.get().asFile
+        targetDir.deleteDir()
+        targetDir.mkdirs()
+
+        classpathFiles.files.each { file ->
+            if (file.name.endsWith(".jar")) {
+                def dest = new File(targetDir, file.name)
+                java.nio.file.Files.copy(
+                        file.toPath(), 
+                        dest.toPath(), 
+                        java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                )
+            } else if (file.name.endsWith(".aar")) {
+                def baseName = file.name.substring(0, file.name.lastIndexOf('.'))
+                def zip = new java.util.zip.ZipFile(file)
+                try {
+                    zip.entries().each { entry ->
+                        if (entry.name == "classes.jar") {
+                            def dest = new File(targetDir, "${baseName}.jar")
+                            def input = zip.getInputStream(entry)
+                            try {
+                                java.nio.file.Files.copy(
+                                        input, 
+                                        dest.toPath(), 
+                                        java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                                )
+                            } finally {
+                                input?.close()
+                            }
+                        } else if (entry.name.startsWith("libs/") && entry.name.endsWith(".jar")) {
+                            def jarName = entry.name.substring(entry.name.lastIndexOf('/') + 1)
+                            def dest = new File(targetDir, "${baseName}-${jarName}")
+                            def input = zip.getInputStream(entry)
+                            try {
+                                java.nio.file.Files.copy(
+                                        input, 
+                                        dest.toPath(), 
+                                        java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                                )
+                            } finally {
+                                input?.close()
+                            }
+                        }
+                    }
+                } finally {
+                    zip.close()
+                }
+            }
+        }
+    }
 }
