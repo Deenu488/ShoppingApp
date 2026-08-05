@@ -1,0 +1,1 @@
+bundletool build-apks --bundle=/storage/emulated/0/Project/apps/IDEwithAI/app/build/outputs/bundle/debug/app-debug.aab --output=/storage/emulated/0/Project/apps/IDEwithAI/app/build/outputs/bundle/debug/app-debug.apks --mode=universal --aapt2=/data/data/com.termux/files/usr/bin/aapt2

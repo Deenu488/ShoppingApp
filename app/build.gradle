@@ -1,0 +1,89 @@
+plugins {
+    id "com.android.application"
+    id "com.diffplug.spotless"
+    id "org.jetbrains.kotlin.plugin.compose"
+}
+
+android {
+    namespace "dn.uilabwith.ai"
+    compileSdk 37
+	
+		
+    defaultConfig {
+        applicationId "dn.uilabwith.ai"
+        minSdk 26
+        targetSdk 37
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging false
+        }               
+    }
+
+    signingConfigs {
+        release {
+            storeFile rootProject.file("dnwithai_innovations.jks")            
+            storePassword "dnwithai.innovations"
+            keyAlias "dnwithai_innovations"
+            keyPassword "dnwithai.innovations"
+        }
+        debug {
+            storeFile rootProject.file("debug.keystore")             
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+        }    
+    }
+    
+    buildTypes {
+        debug {
+            debuggable true
+            shrinkResources false
+            minifyEnabled false            
+	        signingConfig signingConfigs.debug            
+        }
+        release {
+            debuggable false
+            shrinkResources true
+            minifyEnabled true            
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+	        signingConfig signingConfigs.release            
+        }
+    }
+
+    compileOptions {
+        coreLibraryDesugaringEnabled true
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+
+    buildFeatures {        
+        compose true 
+        buildConfig false       
+    }
+
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
+    spotless {
+        kotlin {
+            target "**/*.kt"
+            ktlint()                     
+        }
+
+        java {
+            target "**/*.java"
+            googleJavaFormat() 
+        }
+    }
+}
+
+dependencies {    
+        
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+}
