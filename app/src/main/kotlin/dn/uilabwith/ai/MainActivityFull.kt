@@ -7,11 +7,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -31,12 +37,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 val AppTypography = Typography()
 
@@ -259,11 +274,11 @@ fun SplashScreenFull(onNavigateToHome: () -> Unit) {
                 .fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-        Image(
+        /*Image(
             painter = painterResource(id = R.drawable.ic_launcher),
             contentDescription = "App Logo",
             modifier = Modifier.size(180.dp),
-        )
+        )*/
     }
 }
 
@@ -287,6 +302,39 @@ fun Main() {
     }
 }
 
+@Composable
+fun DashBox(
+    modifier: Modifier = Modifier,
+    cornerRadius: Dp = 8.dp,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    Box(
+        modifier =
+            modifier
+                // 1. Clip the background so it matches the rounded border corners
+                .clip(RoundedCornerShape(cornerRadius))
+                .background(MaterialTheme.colorScheme.background)
+                .drawBehind {
+                    // 2. Convert dp to px so strokes & dashes scale correctly on all screen densities
+                    val strokeWidthPx = 2.dp.toPx()
+                    val dashPx = 6.dp.toPx()
+                    val dashStroke =
+                        Stroke(
+                            width = strokeWidthPx,
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(dashPx, dashPx), 0f),
+                        )
+
+                    drawRoundRect(
+                        color = Color(0xFFCCCCCC),
+                        style = dashStroke,
+                        cornerRadius = CornerRadius(cornerRadius.toPx()),
+                    )
+                },
+        contentAlignment = Alignment.Center,
+        content = content,
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreenFull() {
@@ -298,15 +346,31 @@ fun HomeScreenFull() {
                 },
             )
         },
+        containerColor = MaterialTheme.colorScheme.surface,
     ) { innerPadding ->
-        Box(
+        // Top-left & Top-right rounded Surface/Box
+        Surface(
             modifier =
                 Modifier
                     .fillMaxSize()
                     .padding(innerPadding),
-            contentAlignment = Alignment.Center,
+            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerHighest,
         ) {
-            Text(text = "Welcome Home!")
+            DashBox(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        // 3. Margin inside the rounded view so DashBox doesn't touch the outer edges
+                        .padding(16.dp),
+                cornerRadius = 16.dp,
+            ) {
+                Text(
+                    text = "Welcome Home!",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
         }
     }
 }
