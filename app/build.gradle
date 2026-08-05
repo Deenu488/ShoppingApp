@@ -5,12 +5,12 @@ plugins {
 }
 
 android {
-    namespace "dn.uilabwith.ai"
+    namespace "com.example"
     compileSdk 37
 	
 		
     defaultConfig {
-        applicationId "dn.uilabwith.ai"
+        applicationId "com.example"
         minSdk 26
         targetSdk 37
         versionCode 1

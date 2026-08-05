@@ -1,4 +1,4 @@
-package dn.uilabwith.ai
+package com.example
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -25,8 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import dn.uilabwith.ai.R
-import dn.uilabwith.ai.ui.theme.AppTheme
+import com.example.R
+import com.example.ui.theme.AppTheme
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
@@ -67,7 +67,7 @@ fun SplashScreen(onNavigateToHome: () -> Unit) {
         contentAlignment = Alignment.Center,
     ) {
         Image(
-            painter = painterResource(id = R.drawable.ic_launcher),
+            painter = painterResource(id = R.drawable.icon),
             contentDescription = "App Logo",
             modifier = Modifier.size(180.dp),
         )
@@ -81,7 +81,7 @@ fun HomeScreen() {
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text(text = "UiLabwithAI")
+                    Text(text = "ShoppingApp")
                 },
             )
         },

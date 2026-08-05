@@ -39,6 +39,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "UiLab"
+rootProject.name = "ShoppingApp"
 
 include(":app")

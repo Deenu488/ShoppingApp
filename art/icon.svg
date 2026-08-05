@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Bag Background Gradient -->
+    <linearGradient id="bagGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+
+    <!-- Vibrant Paint Wave Gradient -->
+    <linearGradient id="paintGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#EC4899" />
+      <stop offset="50%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#3B82F6" />
+    </linearGradient>
+  </defs>
+
+  <!-- SHOPPING BAG HANDLE -->
+  <path d="M 186 180 V 125 C 186 85, 326 85, 326 125 V 180" 
+        fill="none" 
+        stroke="#475569" 
+        stroke-width="24" 
+        stroke-linecap="round" />
+
+  <!-- MAIN SHOPPING BAG BODY -->
+  <rect x="96" y="170" width="320" height="270" rx="32" fill="url(#bagGradient)" />
+
+  <!-- DYNAMIC PAINT WAVE ON BAG -->
+  <path d="M 96 320 
+           Q 150 360, 210 320 
+           T 330 320 
+           Q 370 340, 416 310 
+           V 408 
+           C 416 425, 402 440, 384 440 
+           H 128 
+           C 110 440, 96 425, 96 408 
+           Z" 
+        fill="url(#paintGradient)" />
+
+  <!-- PAINT DRIPS -->
+  <rect x="168" y="320" width="24" height="48" rx="12" fill="#EC4899" />
+  <rect x="244" y="310" width="24" height="64" rx="12" fill="#8B5CF6" />
+  <rect x="320" y="315" width="24" height="40" rx="12" fill="#3B82F6" />
+
+  <!-- CENTRALIZED ART THEME ICON (PALETTE & COLOR WELLS) -->
+  <g transform="translate(256, 230)">
+    <!-- Palette Base (Light Cream) -->
+    <path d="M -50 -10 C -70 -10, -90 10, -90 30 C -90 50, -70 70, -50 70 H 50 C 70 70, 90 50, 90 30 C 90 10, 70 -10, 50 -10 Z" 
+          fill="#F8FAFC" 
+          stroke="#E2E8F0" 
+          stroke-width="4" />
+    <!-- Thumb Hole -->
+    <circle cx="-40" cy="30" r="15" fill="#E2E8F0" />
+    <!-- Theme Color Spots (Pink, Purple, Blue, Green, Yellow) -->
+    <circle cx="40" cy="10" r="12" fill="#EC4899" />
+    <circle cx="20" cy="-5" r="12" fill="#8B5CF6" />
+    <circle cx="-5" cy="-10" r="12" fill="#3B82F6" />
+    <circle cx="-25" cy="5" r="12" fill="#22C55E" />
+    <circle cx="-35" cy="35" r="12" fill="#EAB308" />
+  </g>
+
+  <!-- SUBTLE ACCENT SHINE ON BAG HEADER -->
+  <path d="M 128 170 H 384 C 401 170, 416 185, 416 202 V 210 H 96 V 202 C 96 185, 111 170, 128 170 Z" 
+        fill="#FFFFFF" 
+        opacity="0.05" />
+</svg>
