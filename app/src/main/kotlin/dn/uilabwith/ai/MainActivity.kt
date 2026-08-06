@@ -1,5 +1,6 @@
 package com.example
 
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,16 +10,26 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -39,7 +50,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.R
@@ -176,7 +192,7 @@ fun HomeScreen() {
 
             val navItems =
                 listOf(
-                    BottomNavItem("Home", R.drawable.ic_home),                   
+                    BottomNavItem("Home", R.drawable.ic_home),
                 )
 
             Scaffold(
@@ -198,9 +214,117 @@ fun HomeScreen() {
                             .padding(innerPadding),
                 ) {
                     when (selectedIndex) {
+                        0 -> Home()
                     }
                 }
             }
         }
+    }
+}
+
+data class ShoppingItem(
+    val id: Int,
+    val name: String,
+    val mrp: Int,
+    val sp: Int,
+    @DrawableRes val imageRes: Int,
+)
+
+@Composable
+fun ShoppingGridScreen(
+    items: List<ShoppingItem>,
+    modifier: Modifier = Modifier,
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 160.dp),
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        items(
+            items = items,
+            key = { it.id },
+        ) { item ->
+            ShoppingItemCard(
+                item = item,
+            )
+        }
+    }
+}
+
+@Composable
+fun ShoppingItemCard(
+    item: ShoppingItem,
+    modifier: Modifier = Modifier,
+) {
+    ElevatedCard(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors =
+            CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+            ),
+        elevation =
+            CardDefaults.elevatedCardElevation(
+                defaultElevation = 2.dp,
+                pressedElevation = 6.dp,
+            ),
+    ) {
+        Column {
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+            ) {
+                Image(
+                    painter = painterResource(id = item.imageRes),
+                    contentDescription = item.name,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                )
+
+                Column(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                    verticalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = item.name,
+                        maxLines = 2,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun Home() {
+    val sampleItems =
+        listOf(
+            ShoppingItem(1, "Wireless Noise-Canceling Headphones", 4999, 2999, android.R.drawable.ic_menu_gallery),
+            ShoppingItem(2, "Smart Fitness Watch Series 5", 3499, 1899, android.R.drawable.ic_menu_gallery),
+            ShoppingItem(3, "Ergonomic Mechanical Keyboard", 2999, 2199, android.R.drawable.ic_menu_gallery),
+            ShoppingItem(4, "Fast Charging Power Bank 20000mAh", 1999, 999, android.R.drawable.ic_menu_gallery),
+            ShoppingItem(5, "Bluetooth Portable Speaker", 2499, 1499, android.R.drawable.ic_menu_gallery),
+            ShoppingItem(6, "HD Webcam 1080p with Mic", 1799, 1299, android.R.drawable.ic_menu_gallery),
+            ShoppingItem(7, "Wireless Noise-Canceling Headphones", 4999, 2999, android.R.drawable.ic_menu_gallery),
+            ShoppingItem(8, "Smart Fitness Watch Series 5", 3499, 1899, android.R.drawable.ic_menu_gallery),
+            ShoppingItem(9, "Ergonomic Mechanical Keyboard", 2999, 2199, android.R.drawable.ic_menu_gallery),
+            ShoppingItem(10, "Fast Charging Power Bank 20000mAh", 1999, 999, android.R.drawable.ic_menu_gallery),
+            ShoppingItem(11, "Bluetooth Portable Speaker", 2499, 1499, android.R.drawable.ic_menu_gallery),
+            ShoppingItem(12, "HD Webcam 1080p with Mic", 1799, 1299, android.R.drawable.ic_menu_gallery),
+        )
+
+    Scaffold { innerPadding ->
+        ShoppingGridScreen(
+            items = sampleItems,
+            modifier = Modifier.padding(innerPadding),
+        )
     }
 }
