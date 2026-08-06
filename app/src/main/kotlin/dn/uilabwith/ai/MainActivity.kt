@@ -223,11 +223,11 @@ fun HomeScreen() {
 }
 
 data class ShoppingItem(
-    val id: Int,
     val name: String,
     val mrp: Int,
     val sp: Int,
     @DrawableRes val imageRes: Int,
+    val id: String? = null,
 )
 
 @Composable
@@ -244,7 +244,6 @@ fun ShoppingGridScreen(
     ) {
         items(
             items = items,
-            key = { it.id },
         ) { item ->
             ShoppingItemCard(
                 item = item,
@@ -285,19 +284,17 @@ fun ShoppingItemCard(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
                 )
+            }
 
-                Column(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp),
-                    verticalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        text = item.name,
-                        maxLines = 2,
-                    )
-                }
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+            ) {
+                Text(
+                    text = item.name,
+                )
             }
         }
     }
@@ -307,18 +304,18 @@ fun ShoppingItemCard(
 fun Home() {
     val sampleItems =
         listOf(
-            ShoppingItem(1, "Wireless Noise-Canceling Headphones", 4999, 2999, android.R.drawable.ic_menu_gallery),
-            ShoppingItem(2, "Smart Fitness Watch Series 5", 3499, 1899, android.R.drawable.ic_menu_gallery),
-            ShoppingItem(3, "Ergonomic Mechanical Keyboard", 2999, 2199, android.R.drawable.ic_menu_gallery),
-            ShoppingItem(4, "Fast Charging Power Bank 20000mAh", 1999, 999, android.R.drawable.ic_menu_gallery),
-            ShoppingItem(5, "Bluetooth Portable Speaker", 2499, 1499, android.R.drawable.ic_menu_gallery),
-            ShoppingItem(6, "HD Webcam 1080p with Mic", 1799, 1299, android.R.drawable.ic_menu_gallery),
-            ShoppingItem(7, "Wireless Noise-Canceling Headphones", 4999, 2999, android.R.drawable.ic_menu_gallery),
-            ShoppingItem(8, "Smart Fitness Watch Series 5", 3499, 1899, android.R.drawable.ic_menu_gallery),
-            ShoppingItem(9, "Ergonomic Mechanical Keyboard", 2999, 2199, android.R.drawable.ic_menu_gallery),
-            ShoppingItem(10, "Fast Charging Power Bank 20000mAh", 1999, 999, android.R.drawable.ic_menu_gallery),
-            ShoppingItem(11, "Bluetooth Portable Speaker", 2499, 1499, android.R.drawable.ic_menu_gallery),
-            ShoppingItem(12, "HD Webcam 1080p with Mic", 1799, 1299, android.R.drawable.ic_menu_gallery),
+            ShoppingItem("Wireless Noise-Canceling Headphones", 4999, 2999, android.R.drawable.ic_menu_gallery),
+            ShoppingItem("Smart Fitness Watch Series 5", 3499, 1899, android.R.drawable.ic_menu_gallery),
+            ShoppingItem("Ergonomic Mechanical Keyboard", 2999, 2199, android.R.drawable.ic_menu_gallery),
+            ShoppingItem("Fast Charging Power Bank 20000mAh", 1999, 999, android.R.drawable.ic_menu_gallery),
+            ShoppingItem("Bluetooth Portable Speaker", 2499, 1499, android.R.drawable.ic_menu_gallery),
+            ShoppingItem("HD Webcam 1080p with Mic", 1799, 1299, android.R.drawable.ic_menu_gallery),
+            ShoppingItem("Wireless Noise-Canceling Headphones", 4999, 2999, android.R.drawable.ic_menu_gallery),
+            ShoppingItem("Smart Fitness Watch Series 5", 3499, 1899, android.R.drawable.ic_menu_gallery),
+            ShoppingItem("Ergonomic Mechanical Keyboard", 2999, 2199, android.R.drawable.ic_menu_gallery),
+            ShoppingItem("Fast Charging Power Bank 20000mAh", 1999, 999, android.R.drawable.ic_menu_gallery),
+            ShoppingItem("Bluetooth Portable Speaker", 2499, 1499, android.R.drawable.ic_menu_gallery),
+            ShoppingItem("HD Webcam 1080p with Mic", 1799, 1299, android.R.drawable.ic_menu_gallery),
         )
 
     Scaffold { innerPadding ->
