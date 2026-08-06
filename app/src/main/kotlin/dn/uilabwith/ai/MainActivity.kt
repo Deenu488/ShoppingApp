@@ -193,6 +193,7 @@ fun HomeScreen() {
             val navItems =
                 listOf(
                     BottomNavItem("Home", R.drawable.ic_home),
+                    BottomNavItem("Account", R.drawable.ic_account),
                 )
 
             Scaffold(
