@@ -305,18 +305,18 @@ fun ShoppingItemCard(
 fun Home() {
     val sampleItems =
         listOf(
-            ShoppingItem("Wireless Noise-Canceling Headphones", 4999, 2999, android.R.drawable.ic_menu_gallery),
-            ShoppingItem("Smart Fitness Watch Series 5", 3499, 1899, android.R.drawable.ic_menu_gallery),
-            ShoppingItem("Ergonomic Mechanical Keyboard", 2999, 2199, android.R.drawable.ic_menu_gallery),
-            ShoppingItem("Fast Charging Power Bank 20000mAh", 1999, 999, android.R.drawable.ic_menu_gallery),
-            ShoppingItem("Bluetooth Portable Speaker", 2499, 1499, android.R.drawable.ic_menu_gallery),
-            ShoppingItem("HD Webcam 1080p with Mic", 1799, 1299, android.R.drawable.ic_menu_gallery),
-            ShoppingItem("Wireless Noise-Canceling Headphones", 4999, 2999, android.R.drawable.ic_menu_gallery),
-            ShoppingItem("Smart Fitness Watch Series 5", 3499, 1899, android.R.drawable.ic_menu_gallery),
-            ShoppingItem("Ergonomic Mechanical Keyboard", 2999, 2199, android.R.drawable.ic_menu_gallery),
-            ShoppingItem("Fast Charging Power Bank 20000mAh", 1999, 999, android.R.drawable.ic_menu_gallery),
-            ShoppingItem("Bluetooth Portable Speaker", 2499, 1499, android.R.drawable.ic_menu_gallery),
-            ShoppingItem("HD Webcam 1080p with Mic", 1799, 1299, android.R.drawable.ic_menu_gallery),
+            ShoppingItem("Wireless Noise-Canceling Headphones", 4999, 2999, R.drawable.paint),
+            ShoppingItem("Smart Fitness Watch Series 5", 3499, 1899, R.drawable.paint),
+            ShoppingItem("Ergonomic Mechanical Keyboard", 2999, 2199, R.drawable.paint),
+            ShoppingItem("Fast Charging Power Bank 20000mAh", 1999, 999, R.drawable.paint),
+            ShoppingItem("Bluetooth Portable Speaker", 2499, 1499, R.drawable.paint),
+            ShoppingItem("HD Webcam 1080p with Mic", 1799, 1299, R.drawable.paint),
+            ShoppingItem("Wireless Noise-Canceling Headphones", 4999, 2999, R.drawable.paint),
+            ShoppingItem("Smart Fitness Watch Series 5", 3499, 1899, R.drawable.paint),
+            ShoppingItem("Ergonomic Mechanical Keyboard", 2999, 2199, R.drawable.paint),
+            ShoppingItem("Fast Charging Power Bank 20000mAh", 1999, 999, R.drawable.paint),
+            ShoppingItem("Bluetooth Portable Speaker", 2499, 1499, R.drawable.paint),
+            ShoppingItem("HD Webcam 1080p with Mic", 1799, 1299, R.drawable.paint),
         )
 
     Scaffold { innerPadding ->
