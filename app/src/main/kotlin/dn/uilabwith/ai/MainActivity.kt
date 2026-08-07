@@ -31,6 +31,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
@@ -306,20 +307,24 @@ fun Home() {
     val sampleItems =
         listOf(
             ShoppingItem("Wireless Noise-Canceling Headphones", 4999, 2999, R.drawable.paint),
-            ShoppingItem("Smart Fitness Watch Series 5", 3499, 1899, R.drawable.paint),
-            ShoppingItem("Ergonomic Mechanical Keyboard", 2999, 2199, R.drawable.paint),
-            ShoppingItem("Fast Charging Power Bank 20000mAh", 1999, 999, R.drawable.paint),
-            ShoppingItem("Bluetooth Portable Speaker", 2499, 1499, R.drawable.paint),
-            ShoppingItem("HD Webcam 1080p with Mic", 1799, 1299, R.drawable.paint),
-            ShoppingItem("Wireless Noise-Canceling Headphones", 4999, 2999, R.drawable.paint),
-            ShoppingItem("Smart Fitness Watch Series 5", 3499, 1899, R.drawable.paint),
-            ShoppingItem("Ergonomic Mechanical Keyboard", 2999, 2199, R.drawable.paint),
-            ShoppingItem("Fast Charging Power Bank 20000mAh", 1999, 999, R.drawable.paint),
-            ShoppingItem("Bluetooth Portable Speaker", 2499, 1499, R.drawable.paint),
-            ShoppingItem("HD Webcam 1080p with Mic", 1799, 1299, R.drawable.paint),
         )
 
-    Scaffold { innerPadding ->
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    // TODO: Handle FAB click (e.g., open cart, add item, etc.)
+                },
+              modifier = Modifier.padding(end = 12.dp)
+         
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_plus),
+                    contentDescription = "Create",
+                )
+            }
+        },
+    ) { innerPadding ->
         ShoppingGridScreen(
             items = sampleItems,
             modifier = Modifier.padding(innerPadding),
