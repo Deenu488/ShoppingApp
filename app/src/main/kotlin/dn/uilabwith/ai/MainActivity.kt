@@ -33,6 +33,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -173,52 +174,48 @@ fun FloatingNavigationBar(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen() {
+    var showAddItemScreen by remember { mutableStateOf(false) }
+    var selectedIndex by remember { mutableIntStateOf(0) }
+
+    val navItems = listOf(
+        BottomNavItem("Home", R.drawable.ic_home),
+        BottomNavItem("Account", R.drawable.ic_account),
+    )
+
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(text = "ShoppingApp")
-                },
-            )
+            if (!showAddItemScreen) {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(text = "ShoppingApp")
+                    },
+                )
+            }
         },
+        bottomBar = {
+            if (!showAddItemScreen) {
+                FloatingNavigationBar(
+                    items = navItems,
+                    selectedItemIndex = selectedIndex,
+                    onItemSelected = { index ->
+                        selectedIndex = index
+                    },
+                )
+            }
+        }
     ) { innerPadding ->
         Box(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(innerPadding),
         ) {
-            var selectedIndex by remember { mutableIntStateOf(0) }
-
-            val navItems =
-                listOf(
-                    BottomNavItem("Home", R.drawable.ic_home),
-                    BottomNavItem("Account", R.drawable.ic_account),
+            when (selectedIndex) {
+                0 -> Home(
+                    showAddItemScreen = showAddItemScreen,
+                    onOpenAddItem = { showAddItemScreen = true },
+                    onCloseAddItem = { showAddItemScreen = false }
                 )
-
-            Scaffold(
-                bottomBar = {
-                    FloatingNavigationBar(
-                        items = navItems,
-                        selectedItemIndex = selectedIndex,
-                        onItemSelected = { index ->
-                            selectedIndex = index
-                        },
-                    )
-                },
-            ) { innerPadding ->
-                Box(
-                    modifier =
-                        Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(innerPadding),
-                ) {
-                    when (selectedIndex) {
-                        0 -> Home()
-                    }
-                }
             }
         }
     }
@@ -303,31 +300,70 @@ fun ShoppingItemCard(
 }
 
 @Composable
-fun Home() {
-    val sampleItems =
-        listOf(
-            ShoppingItem("Wireless Noise-Canceling Headphones", 4999, 2999, R.drawable.paint),
-        )
+fun Home(
+    showAddItemScreen: Boolean,
+    onOpenAddItem: () -> Unit,
+    onCloseAddItem: () -> Unit,
+) {
+    val sampleItems = listOf(
+        ShoppingItem("Wireless Noise-Canceling Headphones", 4999, 2999, R.drawable.paint),
+    )
 
+    if (showAddItemScreen) {
+        AddNewItem(
+            onBack = onCloseAddItem
+        )
+    } else {
+        Scaffold(
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = onOpenAddItem,
+                    modifier = Modifier.padding(end = 12.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_plus),
+                        contentDescription = "Create",
+                    )
+                }
+            },
+        ) { innerPadding ->
+            ShoppingGridScreen(
+                items = sampleItems,
+                modifier = Modifier.padding(innerPadding),
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddNewItem(onBack: () -> Unit) {
     Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    // TODO: Handle FAB click (e.g., open cart, add item, etc.)
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(text = "Add New Item")
+                },          
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_back),
+                            contentDescription = "Back",
+                            modifier = Modifier.padding(start = 4.dp),
+                        )
+                    }
                 },
-              modifier = Modifier.padding(end = 12.dp)
-         
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_plus),
-                    contentDescription = "Create",
-                )
-            }
+            )
         },
     ) { innerPadding ->
-        ShoppingGridScreen(
-            items = sampleItems,
-            modifier = Modifier.padding(innerPadding),
-        )
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+            contentAlignment = Alignment.Center,
+        ) {
+            // Add your form or content here
+        }
     }
 }
