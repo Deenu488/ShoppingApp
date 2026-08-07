@@ -349,7 +349,7 @@ fun AddNewItem(onBack: () -> Unit) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_back),
                             contentDescription = "Back",
-                            modifier = Modifier.padding(start = 4.dp),
+                            modifier = Modifier.padding(start = 4.dp, end = 4.dp,),
                         )
                     }
                 },
