@@ -7,23 +7,31 @@ import androidx.activity.compose.setContent
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -32,6 +40,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -56,6 +65,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -63,10 +73,6 @@ import androidx.compose.ui.unit.dp
 import com.example.R
 import com.example.ui.theme.AppTheme
 import kotlinx.coroutines.delay
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.isImeVisible
-import androidx.compose.foundation.layout.ExperimentalLayoutApi 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -181,10 +187,11 @@ fun HomeScreen() {
     var showAddItemScreen by remember { mutableStateOf(false) }
     var selectedIndex by remember { mutableIntStateOf(0) }
 
-    val navItems = listOf(
-        BottomNavItem("Home", R.drawable.ic_home),
-        BottomNavItem("Account", R.drawable.ic_account),
-    )
+    val navItems =
+        listOf(
+            BottomNavItem("Home", R.drawable.ic_home),
+            BottomNavItem("Account", R.drawable.ic_account),
+        )
 
     Scaffold(
         topBar = {
@@ -206,20 +213,23 @@ fun HomeScreen() {
                     },
                 )
             }
-        }
+        },
     ) { innerPadding ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(innerPadding),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(innerPadding),
         ) {
             when (selectedIndex) {
-                0 -> Home(
-                    showAddItemScreen = showAddItemScreen,
-                    onOpenAddItem = { showAddItemScreen = true },
-                    onCloseAddItem = { showAddItemScreen = false }
-                )
+                0 -> {
+                    Home(
+                        showAddItemScreen = showAddItemScreen,
+                        onOpenAddItem = { showAddItemScreen = true },
+                        onCloseAddItem = { showAddItemScreen = false },
+                    )
+                }
             }
         }
     }
@@ -309,13 +319,14 @@ fun Home(
     onOpenAddItem: () -> Unit,
     onCloseAddItem: () -> Unit,
 ) {
-    val sampleItems = listOf(
-        ShoppingItem("Wireless Noise-Canceling Headphones", 4999, 2999, R.drawable.paint),
-    )
+    val sampleItems =
+        listOf(
+            ShoppingItem("Wireless Noise-Canceling Headphones", 4999, 2999, R.drawable.paint),
+        )
 
     if (showAddItemScreen) {
         AddNewItem(
-            onBack = onCloseAddItem
+            onBack = onCloseAddItem,
         )
     } else {
         Scaffold(
@@ -346,21 +357,86 @@ data class ProductDetails(
     val sp: String = "",
 )
 
+@Composable
+fun BottomCartBar() {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        shadowElevation = 8.dp,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+    ) {
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Button(
+                onClick = {},
+                modifier =
+                    Modifier
+                        .height(56.dp)
+                        .weight(0.16f),
+                shape = RoundedCornerShape(16.dp),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                    ),
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_upload),
+                    contentDescription = "Upload",
+                    modifier = Modifier.size(32.dp),
+                )
+            }
+
+            Spacer(modifier = Modifier.width(32.dp))
+
+            Button(
+                onClick = {},
+                modifier =
+                    Modifier
+                        .height(56.dp)
+                        .weight(0.56f),
+                shape = RoundedCornerShape(16.dp),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                    ),
+            ) {
+                Text(
+                    text = "Save",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun AddNewItem(onBack: () -> Unit) {
+fun AddNewItem(
+    product: ProductDetails = ProductDetails(),
+    onBack: () -> Unit,
+) {
+    var title by remember { mutableStateOf(product.title) }
+    var description by remember { mutableStateOf(product.description) }
+    var mrp by remember { mutableStateOf(product.mrp) }
+    var sp by remember { mutableStateOf(product.sp) }
     val isKeyboardOpen = WindowInsets.isImeVisible
-   
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(text = "Add New Item")
-                },          
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_back),
+                            painter = painterResource(id = R.drawable.ic_back), // Ensure this resource exists
                             contentDescription = "Back",
                             modifier = Modifier.padding(start = 4.dp, end = 4.dp),
                         )
@@ -369,80 +445,113 @@ fun AddNewItem(onBack: () -> Unit) {
             )
         },
         bottomBar = {
-           if (!isKeyboardOpen) {
+            if (!isKeyboardOpen) {
                 BottomCartBar()
             }
-        }
-    ) { innerPadding ->
-        Box(
+        },
+    ) { paddingValues ->
+        Column(
             modifier =
                 Modifier
                     .fillMaxSize()
-                    .padding(innerPadding),
-            contentAlignment = Alignment.Center,
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(paddingValues)
+                    .imePadding()
+                    .verticalScroll(rememberScrollState()),
         ) {
-            
-        }
-    }
-}
+            Spacer(modifier = Modifier.height(16.dp))
 
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(2f)
+                        .padding(horizontal = 16.dp)
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .clickable {
+                            // Handle image click
+                        },
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_image_upload), // Ensure this resource exists
+                        contentDescription = "Upload Product Image",
+                        modifier = Modifier.size(48.dp),
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Tap to upload image",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+            }
 
-@Composable
-fun BottomCartBar(
-) {
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        shadowElevation = 8.dp,
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-               
-                .padding(horizontal = 24.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            
-            Button(
-                onClick = {},
-                modifier = Modifier
-                    .height(56.dp) 
-                         .weight(0.16f),   
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(  
-                    containerColor = MaterialTheme.colorScheme.primary
-                ) 
-            ) { 
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_upload),
-                    contentDescription = "Upload",
-             modifier = Modifier.size(32.dp), 
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                )     
-            } 
- 
-            
-            Spacer(modifier = Modifier.width(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
-                onClick = {},
-                modifier = Modifier
-                    .height(56.dp)   
-                  
-                    .weight(0.56f), 
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
+            ) {
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Product Title") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
                 )
-            ) { 
-                Text(  
-                    text = "Save",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    OutlinedTextField(
+                        value = sp,
+                        onValueChange = { sp = it },
+                        label = { Text("SP") },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        shape = RoundedCornerShape(12.dp),
+                    )
+
+                    OutlinedTextField(
+                        value = mrp,
+                        onValueChange = { mrp = it },
+                        label = { Text("MRP") },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        shape = RoundedCornerShape(12.dp),
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                Spacer(modifier = Modifier.height(24.dp))
+
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Product Description") },
+                    modifier =
+                        Modifier
+                            .fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
                 )
+
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }
 }
-
