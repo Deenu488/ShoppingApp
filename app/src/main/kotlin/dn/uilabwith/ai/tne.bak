@@ -1,0 +1,270 @@
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+// Make sure to add these insets imports:
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.isImeVisible
+
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+
+// --- Data Model ---
+data class ProductDetails(
+    val title: String = "",
+    val description: String = "",
+    val mrp: String = "",
+    val sp: String = "",
+    val discountPercent: String = ""
+)
+
+// --- Main Composable ---
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+fun ProductDetailScreen(
+    product: ProductDetails = ProductDetails(), 
+) {
+    var title by remember { mutableStateOf(product.title) }
+    var description by remember { mutableStateOf(product.description) }
+    var mrp by remember { mutableStateOf(product.mrp) }
+    var sp by remember { mutableStateOf(product.sp) }
+
+    // 1. Detect if the software keyboard is visible
+    val isKeyboardOpen = WindowInsets.isImeVisible
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { 
+                    Text(
+                        text = if (product.title.isEmpty()) "Add Product" else "Edit Product",
+                        fontWeight = FontWeight.Bold
+                    ) 
+                },
+                navigationIcon = {
+                    IconButton(onClick = { /* Handle back navigation */ }) {
+                        Icon(
+                            imageVector = Icons.Rounded.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent
+                )
+            )
+        },
+        bottomBar = {
+            // 2. Only show the bottom bar if the keyboard is NOT open
+            if (!isKeyboardOpen) {
+                BottomCartBar(
+                    onSaveClick = {
+                        // TODO: Handle save logic
+                    }
+                )
+            }
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                // 3. Add imePadding() so the content gets pushed up by the keyboard
+                .imePadding()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+        ) {
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Image Upload Section
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(2f)  
+                    .padding(horizontal = 16.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .clickable {
+                        // TODO: Launch Photo Picker
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Add,
+                        contentDescription = "Upload Product Image",
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Tap to upload image",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Product Information Edit Fields
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+            ) {
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Product Title") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    OutlinedTextField(
+                        value = sp,
+                        onValueChange = { sp = it },
+                        label = { Text("Selling Price (SP)") },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+
+                    OutlinedTextField(
+                        value = mrp,
+                        onValueChange = { mrp = it },
+                        label = { Text("MRP") },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                Spacer(modifier = Modifier.height(24.dp))
+
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Product Description") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp),
+                    shape = RoundedCornerShape(12.dp)
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun BottomCartBar(
+    onSaveClick: () -> Unit
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        shadowElevation = 8.dp,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            
+            Button(
+                onClick = {},
+                modifier = Modifier
+                    .height(56.dp) 
+                    // Changed from fillMaxWidth to weight for proper Row sizing
+                    .weight(0.16f),   
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(  
+                    containerColor = MaterialTheme.colorScheme.primary
+                ) 
+            ) { 
+                Icon(
+                    imageVector = Icons.Rounded.Add,
+                    contentDescription = "Upload",
+                    // Note: You might want to lower this size to 24.dp or 32.dp 
+                    // since the button height is only 56.dp!
+                    modifier = Modifier.size(32.dp), 
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                )     
+            } 
+ 
+            // --- ADDED SPACE HERE ---
+            Spacer(modifier = Modifier.width(32.dp))
+
+            Button(
+                onClick = onSaveClick,
+                modifier = Modifier
+                    .height(56.dp)   
+                    // Changed from fillMaxWidth to weight
+                    .weight(0.56f), 
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) { 
+                Text(  
+                    text = "Save",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+    }
+}
+
+
+// --- Previews ---
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun ProductDetailScreenPreview() {
+    MaterialTheme {
+        // Passing an empty ProductDetails simulates the "Add Product" state
+        ProductDetailScreen(
+            product = ProductDetails(
+                title = "Sony WH-1000XM5 Wireless",
+                description = "Industry-leading noise cancellation optimized to you. Magnificent Sound, engineered to perfection.",
+                mrp = "399.99",
+                sp = "298.00"
+            )
+        )
+    }
+} 

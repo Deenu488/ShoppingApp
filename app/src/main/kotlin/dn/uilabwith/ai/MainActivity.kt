@@ -63,6 +63,10 @@ import androidx.compose.ui.unit.dp
 import com.example.R
 import com.example.ui.theme.AppTheme
 import kotlinx.coroutines.delay
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.layout.ExperimentalLayoutApi 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -335,9 +339,18 @@ fun Home(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+data class ProductDetails(
+    val title: String = "",
+    val description: String = "",
+    val mrp: String = "",
+    val sp: String = "",
+)
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun AddNewItem(onBack: () -> Unit) {
+    val isKeyboardOpen = WindowInsets.isImeVisible
+   
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -349,12 +362,17 @@ fun AddNewItem(onBack: () -> Unit) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_back),
                             contentDescription = "Back",
-                            modifier = Modifier.padding(start = 4.dp, end = 4.dp,),
+                            modifier = Modifier.padding(start = 4.dp, end = 4.dp),
                         )
                     }
                 },
             )
         },
+        bottomBar = {
+           if (!isKeyboardOpen) {
+                BottomCartBar()
+            }
+        }
     ) { innerPadding ->
         Box(
             modifier =
@@ -363,7 +381,68 @@ fun AddNewItem(onBack: () -> Unit) {
                     .padding(innerPadding),
             contentAlignment = Alignment.Center,
         ) {
-            // Add your form or content here
+            
         }
     }
 }
+
+
+@Composable
+fun BottomCartBar(
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        shadowElevation = 8.dp,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+               
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            
+            Button(
+                onClick = {},
+                modifier = Modifier
+                    .height(56.dp) 
+                         .weight(0.16f),   
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(  
+                    containerColor = MaterialTheme.colorScheme.primary
+                ) 
+            ) { 
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_upload),
+                    contentDescription = "Upload",
+             modifier = Modifier.size(32.dp), 
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                )     
+            } 
+ 
+            
+            Spacer(modifier = Modifier.width(32.dp))
+
+            Button(
+                onClick = {},
+                modifier = Modifier
+                    .height(56.dp)   
+                  
+                    .weight(0.56f), 
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) { 
+                Text(  
+                    text = "Save",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+    }
+}
+
