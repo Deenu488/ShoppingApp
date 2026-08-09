@@ -537,9 +537,7 @@ fun AddNewItem(
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
-                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                Spacer(modifier = Modifier.height(24.dp))
-
+             
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
