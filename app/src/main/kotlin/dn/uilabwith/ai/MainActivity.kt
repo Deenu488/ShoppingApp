@@ -1,8 +1,10 @@
 package com.example
 
+import android.content.Context
 import android.content.res.Configuration
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.DrawableRes
@@ -65,9 +67,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -233,6 +237,12 @@ fun HomeScreen() {
                         onCloseAddItem = { showAddItemScreen = false },
                     )
                 }
+
+                1 -> {}
+
+                2 -> {
+                    Settings()
+                }
             }
         }
     }
@@ -276,30 +286,37 @@ fun ShoppingItemCard(
     modifier: Modifier = Modifier,
 ) {
     ElevatedCard(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
-        elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = 2.dp,
-            pressedElevation = 6.dp,
-        ),
+        colors =
+            CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+            ),
+        elevation =
+            CardDefaults.elevatedCardElevation(
+                defaultElevation = 2.dp,
+                pressedElevation = 6.dp,
+            ),
     ) {
         Column {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-                    .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .background(MaterialTheme.colorScheme.surfaceContainerHighest),
             ) {
-                val bitmap = remember(item.imageRes) {
-                    if (item.imageRes.isNotEmpty()) {
-                        BitmapFactory.decodeFile(item.imageRes)?.asImageBitmap()
-                    } else null
-                }
+                val bitmap =
+                    remember(item.imageRes) {
+                        if (item.imageRes.isNotEmpty()) {
+                            BitmapFactory.decodeFile(item.imageRes)?.asImageBitmap()
+                        } else {
+                            null
+                        }
+                    }
 
                 if (bitmap != null) {
                     Image(
@@ -323,9 +340,10 @@ fun ShoppingItemCard(
             }
 
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
             ) {
                 Text(text = item.name)
             }
@@ -339,15 +357,16 @@ fun Home(
     onOpenAddItem: () -> Unit,
     onCloseAddItem: () -> Unit,
 ) {
-    val sampleItems = listOf(
-        ProductDetails(
-            name = "Wireless Noise-Canceling Headphones",
-            mrp = "4999",
-            sp = "2999",
-            imageRes = "",
-            description = "Noise-canceling over-ear headphones",
-        ),
-    )
+    val sampleItems =
+        listOf(
+            ProductDetails(
+                name = "Wireless Noise-Canceling Headphones",
+                mrp = "4999",
+                sp = "2999",
+                imageRes = "",
+                description = "Noise-canceling over-ear headphones",
+            ),
+        )
 
     var isEditMode by remember { mutableStateOf(false) }
     var selectedProduct by remember { mutableStateOf(ProductDetails()) }
@@ -390,6 +409,11 @@ fun Home(
             )
         }
     }
+}
+
+@Composable
+fun Settings() {
+    GitHubTokenScreen()
 }
 
 @Composable
@@ -511,11 +535,14 @@ fun AddNewItem(
                         },
                 contentAlignment = Alignment.Center,
             ) {
-                val bitmap = remember(imageRes) {
-                    if (imageRes.isNotEmpty()) {
-                        BitmapFactory.decodeFile(imageRes)?.asImageBitmap()
-                    } else null
-                }
+                val bitmap =
+                    remember(imageRes) {
+                        if (imageRes.isNotEmpty()) {
+                            BitmapFactory.decodeFile(imageRes)?.asImageBitmap()
+                        } else {
+                            null
+                        }
+                    }
 
                 if (bitmap != null) {
                     Image(
@@ -556,7 +583,7 @@ fun AddNewItem(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Product Title") },
-                    modifier = Modifier.fillMaxWidth(),                    
+                    modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                 )
 
@@ -598,6 +625,59 @@ fun AddNewItem(
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun GitHubTokenScreen() {
+    val context = LocalContext.current
+    val sharedPrefs =
+        remember {
+            context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+        }
+
+    var tokenText by remember {
+        mutableStateOf(sharedPrefs.getString("GITHUB_TOKEN", "") ?: "")
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+    ) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            OutlinedTextField(
+                value = tokenText,
+                onValueChange = { tokenText = it },
+                label = { Text("GitHub Token") },
+                placeholder = { Text("ghp_xxxxxxxxxxxx") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    sharedPrefs
+                        .edit()
+                        .putString("GITHUB_TOKEN", tokenText)
+                        .apply()
+
+                    Toast.makeText(context, "Token saved successfully!", Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = tokenText.isNotBlank(),
+            ) {
+                Text("Save Token")
             }
         }
     }
