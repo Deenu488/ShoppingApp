@@ -1,6 +1,7 @@
 package com.example
 
 import android.content.res.Configuration
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -62,6 +63,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -190,7 +192,8 @@ fun HomeScreen() {
     val navItems =
         listOf(
             BottomNavItem("Home", R.drawable.ic_home),
-            BottomNavItem("Account", R.drawable.ic_account),
+            BottomNavItem("Accounts", R.drawable.ic_accounts),
+            BottomNavItem("Settings", R.drawable.ic_settings),
         )
 
     Scaffold(
@@ -235,17 +238,19 @@ fun HomeScreen() {
     }
 }
 
-data class ShoppingItem(
-    val name: String,
-    val mrp: Int,
-    val sp: Int,
-    @DrawableRes val imageRes: Int,
+data class ProductDetails(
+    val name: String = "",
+    val mrp: String = "",
+    val sp: String = "",
+    val imageRes: String = "",
+    val description: String = "",
     val id: String? = null,
 )
 
 @Composable
 fun ShoppingGridScreen(
-    items: List<ShoppingItem>,
+    items: List<ProductDetails>,
+    onItemClick: (ProductDetails) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyVerticalGrid(
@@ -255,11 +260,10 @@ fun ShoppingGridScreen(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        items(
-            items = items,
-        ) { item ->
+        items(items = items) { item ->
             ShoppingItemCard(
                 item = item,
+                onClick = { onItemClick(item) },
             )
         }
     }
@@ -267,47 +271,63 @@ fun ShoppingGridScreen(
 
 @Composable
 fun ShoppingItemCard(
-    item: ShoppingItem,
+    item: ProductDetails,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ElevatedCard(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors =
-            CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-            ),
-        elevation =
-            CardDefaults.elevatedCardElevation(
-                defaultElevation = 2.dp,
-                pressedElevation = 6.dp,
-            ),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
+        elevation = CardDefaults.elevatedCardElevation(
+            defaultElevation = 2.dp,
+            pressedElevation = 6.dp,
+        ),
     ) {
         Column {
             Box(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1f)
-                        .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest),
             ) {
-                Image(
-                    painter = painterResource(id = item.imageRes),
-                    contentDescription = item.name,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
+                val bitmap = remember(item.imageRes) {
+                    if (item.imageRes.isNotEmpty()) {
+                        BitmapFactory.decodeFile(item.imageRes)?.asImageBitmap()
+                    } else null
+                }
+
+                if (bitmap != null) {
+                    Image(
+                        bitmap = bitmap,
+                        contentDescription = item.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_bag),
+                            contentDescription = item.name,
+                            modifier = Modifier.size(48.dp),
+                        )
+                    }
+                }
             }
 
             Column(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
             ) {
-                Text(
-                    text = item.name,
-                )
+                Text(text = item.name)
             }
         }
     }
@@ -319,20 +339,37 @@ fun Home(
     onOpenAddItem: () -> Unit,
     onCloseAddItem: () -> Unit,
 ) {
-    val sampleItems =
-        listOf(
-            ShoppingItem("Wireless Noise-Canceling Headphones", 4999, 2999, R.drawable.paint),
-        )
+    val sampleItems = listOf(
+        ProductDetails(
+            name = "Wireless Noise-Canceling Headphones",
+            mrp = "4999",
+            sp = "2999",
+            imageRes = "",
+            description = "Noise-canceling over-ear headphones",
+        ),
+    )
+
+    var isEditMode by remember { mutableStateOf(false) }
+    var selectedProduct by remember { mutableStateOf(ProductDetails()) }
 
     if (showAddItemScreen) {
         AddNewItem(
-            onBack = onCloseAddItem,
+            product = selectedProduct,
+            isEdit = isEditMode,
+            onBack = {
+                onCloseAddItem()
+                isEditMode = false
+            },
         )
     } else {
         Scaffold(
             floatingActionButton = {
                 FloatingActionButton(
-                    onClick = onOpenAddItem,
+                    onClick = {
+                        isEditMode = false
+                        selectedProduct = ProductDetails()
+                        onOpenAddItem()
+                    },
                     modifier = Modifier.padding(end = 12.dp),
                 ) {
                     Icon(
@@ -344,18 +381,16 @@ fun Home(
         ) { innerPadding ->
             ShoppingGridScreen(
                 items = sampleItems,
+                onItemClick = { clickedItem ->
+                    selectedProduct = clickedItem
+                    isEditMode = true
+                    onOpenAddItem()
+                },
                 modifier = Modifier.padding(innerPadding),
             )
         }
     }
 }
-
-data class ProductDetails(
-    val title: String = "",
-    val description: String = "",
-    val mrp: String = "",
-    val sp: String = "",
-)
 
 @Composable
 fun BottomCartBar() {
@@ -420,23 +455,25 @@ fun BottomCartBar() {
 fun AddNewItem(
     product: ProductDetails = ProductDetails(),
     onBack: () -> Unit,
+    isEdit: Boolean,
 ) {
-    var title by remember { mutableStateOf(product.title) }
-    var description by remember { mutableStateOf(product.description) }
-    var mrp by remember { mutableStateOf(product.mrp) }
-    var sp by remember { mutableStateOf(product.sp) }
+    var name by remember(product) { mutableStateOf(product.name) }
+    var description by remember(product) { mutableStateOf(product.description) }
+    var mrp by remember(product) { mutableStateOf(product.mrp) }
+    var sp by remember(product) { mutableStateOf(product.sp) }
+    var imageRes by remember(product) { mutableStateOf(product.imageRes) }
     val isKeyboardOpen = WindowInsets.isImeVisible
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text(text = "Add New Item")
+                    Text(text = if (isEdit) "Edit Item" else "Add New Item")
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_back), // Ensure this resource exists
+                            painter = painterResource(id = R.drawable.ic_back),
                             contentDescription = "Back",
                             modifier = Modifier.padding(start = 4.dp, end = 4.dp),
                         )
@@ -470,25 +507,40 @@ fun AddNewItem(
                         .clip(RoundedCornerShape(24.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                         .clickable {
-                            // Handle image click
+                            // Handle image pick/click
                         },
                 contentAlignment = Alignment.Center,
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_image_upload), // Ensure this resource exists
-                        contentDescription = "Upload Product Image",
-                        modifier = Modifier.size(48.dp),
+                val bitmap = remember(imageRes) {
+                    if (imageRes.isNotEmpty()) {
+                        BitmapFactory.decodeFile(imageRes)?.asImageBitmap()
+                    } else null
+                }
+
+                if (bitmap != null) {
+                    Image(
+                        bitmap = bitmap,
+                        contentDescription = "Uploaded Product Image",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Tap to upload image",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
+                } else {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_image_upload),
+                            contentDescription = "Upload Product Image",
+                            modifier = Modifier.size(48.dp),
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Tap to upload image",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    }
                 }
             }
 
@@ -501,11 +553,10 @@ fun AddNewItem(
                         .padding(horizontal = 24.dp),
             ) {
                 OutlinedTextField(
-                    value = title,
-                    onValueChange = { title = it },
+                    value = name,
+                    onValueChange = { name = it },
                     label = { Text("Product Title") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),                    
                     shape = RoundedCornerShape(12.dp),
                 )
 
@@ -537,14 +588,12 @@ fun AddNewItem(
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-             
+
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
                     label = { Text("Product Description") },
-                    modifier =
-                        Modifier
-                            .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                 )
 
