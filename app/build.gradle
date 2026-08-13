@@ -99,7 +99,9 @@ dependencies {
     implementation("org.slf4j:slf4j-simple:2.1.0-alpha1")
     implementation("com.googlecode.javaewah:JavaEWAH:1.2.3")
     implementation("commons-codec:commons-codec:1.22.0")
-
+  
+    implementation("com.google.code.gson:gson:2.14.0")
+  
     implementation project(path: ":jgit", configuration: "shadow")
   
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")

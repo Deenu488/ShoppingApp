@@ -36,6 +36,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -63,6 +64,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -83,10 +85,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.R
 import com.example.ui.theme.AppTheme
+import com.google.gson.GsonBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import androidx.compose.foundation.shape.CircleShape
+import java.io.File
+import java.io.FileOutputStream
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -425,7 +430,13 @@ fun Settings() {
 }
 
 @Composable
-fun BottomCartBar() {
+fun BottomCartBar(
+    product: ProductDetails,
+    imageRes: String,
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainer,
         shadowElevation = 8.dp,
@@ -440,7 +451,7 @@ fun BottomCartBar() {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Button(
-                onClick = {},
+                onClick = { /* Handle separate upload action if needed */ },
                 modifier =
                     Modifier
                         .height(56.dp)
@@ -461,7 +472,60 @@ fun BottomCartBar() {
             Spacer(modifier = Modifier.width(32.dp))
 
             Button(
-                onClick = {},
+                onClick = {
+                    scope.launch(Dispatchers.IO) {
+                        try {
+                            val safeTitle = product.name.replace(Regex("[^a-zA-Z0-9.-]"), "_")
+
+                            val baseDir = File(context.getExternalFilesDir(null), "products/not_uploaded")
+                            if (!baseDir.exists()) {
+                                baseDir.mkdirs()
+                            }
+
+                            val maxNumber =
+                                baseDir
+                                    .listFiles()
+                                    ?.filter { it.isDirectory }
+                                    ?.mapNotNull { it.name.toIntOrNull() }
+                                    ?.maxOrNull() ?: 0
+
+                            val nextNumber = maxNumber + 1
+
+                            val dir = File(baseDir, "$nextNumber")
+
+                            if (!dir.exists()) dir.mkdirs()
+
+                            val jsonFile = File(dir, "$safeTitle.json")
+                            val imageFile = File(dir, "$safeTitle.jpg")
+
+                            var localImagePath = ""
+                            if (imageRes.isNotEmpty()) {
+                                val uri = Uri.parse(imageRes)
+                                context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                                    FileOutputStream(imageFile).use { outputStream ->
+                                        inputStream.copyTo(outputStream)
+                                    }
+                                }
+                                localImagePath = imageFile.absolutePath
+                            }
+                            val productToSave = product.copy(imageRes = localImagePath)
+
+                            val gson = GsonBuilder().setPrettyPrinting().create()
+                            val jsonString = gson.toJson(productToSave)
+
+                            jsonFile.writeText(jsonString)
+
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(context, "Saved successfully!", Toast.LENGTH_SHORT).show()
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(context, "Error saving: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                },
                 modifier =
                     Modifier
                         .height(56.dp)
@@ -546,7 +610,15 @@ fun AddNewItem(
         },
         bottomBar = {
             if (!isKeyboardOpen) {
-                BottomCartBar()
+                val updatedProduct =
+                    product.copy(
+                        name = name,
+                        description = description,
+                        mrp = mrp,
+                        sp = sp,
+                    )
+
+                BottomCartBar(updatedProduct, imageRes)
             }
         },
     ) { paddingValues ->
@@ -575,7 +647,7 @@ fun AddNewItem(
                                 photoPickerLauncher.launch(
                                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
                                 )
-                            }
+                            },
                         ),
                 contentAlignment = Alignment.Center,
             ) {
@@ -586,23 +658,23 @@ fun AddNewItem(
                         contentScale = ContentScale.Fit,
                         modifier = Modifier.fillMaxSize(),
                     )
-                    
-               
+
                     IconButton(
                         onClick = { imageRes = "" },
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(8.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
-                                shape = CircleShape
-                            )
+                        modifier =
+                            Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(8.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
+                                    shape = CircleShape,
+                                ),
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_delete),
                             contentDescription = "Delete Image",
-                            tint = MaterialTheme.colorScheme.error
-                        )                       
+                            tint = MaterialTheme.colorScheme.error,
+                        )
                     }
                 } else {
                     Column(
@@ -682,7 +754,6 @@ fun AddNewItem(
         }
     }
 }
-
 
 @Composable
 fun GitHubTokenScreen() {
