@@ -3,10 +3,14 @@ package com.example
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -65,6 +69,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -78,7 +83,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.R
 import com.example.ui.theme.AppTheme
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -486,7 +493,38 @@ fun AddNewItem(
     var mrp by remember(product) { mutableStateOf(product.mrp) }
     var sp by remember(product) { mutableStateOf(product.sp) }
     var imageRes by remember(product) { mutableStateOf(product.imageRes) }
+
+    val context = LocalContext.current
     val isKeyboardOpen = WindowInsets.isImeVisible
+
+    val photoPickerLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.PickVisualMedia(),
+            onResult = { uri: Uri? ->
+                if (uri != null) {                
+                    imageRes = uri.toString()
+                }
+            },
+        )
+
+    var bitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+
+    LaunchedEffect(imageRes) {
+        if (imageRes.isNotEmpty()) {
+            withContext(Dispatchers.IO) {
+                try {
+                    val uri = Uri.parse(imageRes)
+                     context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                        bitmap = BitmapFactory.decodeStream(inputStream)?.asImageBitmap()
+                    }
+                } catch (e: Exception) {
+                    bitmap = BitmapFactory.decodeFile(imageRes)?.asImageBitmap()
+                }
+            }
+        } else {
+            bitmap = null
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -497,7 +535,7 @@ fun AddNewItem(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_back),
+                            painter = painterResource(id = R.drawable.ic_back), // Update your drawable
                             contentDescription = "Back",
                             modifier = Modifier.padding(start = 4.dp, end = 4.dp),
                         )
@@ -507,7 +545,7 @@ fun AddNewItem(
         },
         bottomBar = {
             if (!isKeyboardOpen) {
-                BottomCartBar()
+                BottomCartBar()           
             }
         },
     ) { paddingValues ->
@@ -531,24 +569,18 @@ fun AddNewItem(
                         .clip(RoundedCornerShape(24.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                         .clickable {
-                            // Handle image pick/click
+                            // 3. Launch the image picker when clicked
+                            photoPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                            )
                         },
                 contentAlignment = Alignment.Center,
-            ) {
-                val bitmap =
-                    remember(imageRes) {
-                        if (imageRes.isNotEmpty()) {
-                            BitmapFactory.decodeFile(imageRes)?.asImageBitmap()
-                        } else {
-                            null
-                        }
-                    }
-
+            ) {              
                 if (bitmap != null) {
                     Image(
-                        bitmap = bitmap,
+                        bitmap = bitmap!!,
                         contentDescription = "Uploaded Product Image",
-                        contentScale = ContentScale.Crop,
+                        contentScale = ContentScale.Fit,
                         modifier = Modifier.fillMaxSize(),
                     )
                 } else {
@@ -557,7 +589,7 @@ fun AddNewItem(
                         verticalArrangement = Arrangement.Center,
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_image_upload),
+                            painter = painterResource(id = R.drawable.ic_image_upload), // Update your drawable
                             contentDescription = "Upload Product Image",
                             modifier = Modifier.size(48.dp),
                         )
