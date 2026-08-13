@@ -85,6 +85,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.R
 import com.example.ui.theme.AppTheme
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -92,6 +93,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
+import java.util.UUID
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -299,10 +301,8 @@ fun ShoppingItemCard(
     modifier: Modifier = Modifier,
 ) {
     ElevatedCard(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .clickable { onClick() },
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors =
             CardDefaults.elevatedCardColors(
@@ -370,19 +370,37 @@ fun Home(
     onOpenAddItem: () -> Unit,
     onCloseAddItem: () -> Unit,
 ) {
-    val sampleItems =
-        listOf(
-            ProductDetails(
-                name = "Wireless Noise-Canceling Headphones",
-                mrp = "4999",
-                sp = "2999",
-                imageRes = "",
-                description = "Noise-canceling over-ear headphones",
-            ),
-        )
+    val context = LocalContext.current
 
     var isEditMode by remember { mutableStateOf(false) }
     var selectedProduct by remember { mutableStateOf(ProductDetails()) }
+
+    var productsList by remember { mutableStateOf<List<ProductDetails>>(emptyList()) }
+
+    LaunchedEffect(showAddItemScreen) {
+        if (!showAddItemScreen) {
+            withContext(Dispatchers.IO) {
+                val baseDir = File(context.getExternalFilesDir(null), "products/not_uploaded")
+                val loadedProducts = mutableListOf<ProductDetails>()
+
+                if (baseDir.exists() && baseDir.isDirectory) {
+                    val gson = Gson()
+
+                    baseDir.walkTopDown().filter { it.isFile && it.extension == "json" }.forEach { file ->
+                        try {
+                            val jsonString = file.readText()
+                            val product = gson.fromJson(jsonString, ProductDetails::class.java)
+                            loadedProducts.add(product)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+
+                productsList = loadedProducts
+            }
+        }
+    }
 
     if (showAddItemScreen) {
         AddNewItem(
@@ -412,7 +430,7 @@ fun Home(
             },
         ) { innerPadding ->
             ShoppingGridScreen(
-                items = sampleItems,
+                items = productsList,
                 onItemClick = { clickedItem ->
                     selectedProduct = clickedItem
                     isEditMode = true
@@ -482,16 +500,7 @@ fun BottomCartBar(
                                 baseDir.mkdirs()
                             }
 
-                            val maxNumber =
-                                baseDir
-                                    .listFiles()
-                                    ?.filter { it.isDirectory }
-                                    ?.mapNotNull { it.name.toIntOrNull() }
-                                    ?.maxOrNull() ?: 0
-
-                            val nextNumber = maxNumber + 1
-
-                            val dir = File(baseDir, "$nextNumber")
+                            val dir = File(baseDir, product.id)
 
                             if (!dir.exists()) dir.mkdirs()
 
@@ -616,6 +625,7 @@ fun AddNewItem(
                         description = description,
                         mrp = mrp,
                         sp = sp,
+                        id = UUID.randomUUID().toString().take(6),
                     )
 
                 BottomCartBar(updatedProduct, imageRes)
