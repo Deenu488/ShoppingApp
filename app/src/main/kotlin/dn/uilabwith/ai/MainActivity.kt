@@ -86,6 +86,7 @@ import com.example.ui.theme.AppTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import androidx.compose.foundation.shape.CircleShape
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -501,7 +502,7 @@ fun AddNewItem(
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.PickVisualMedia(),
             onResult = { uri: Uri? ->
-                if (uri != null) {                
+                if (uri != null) {
                     imageRes = uri.toString()
                 }
             },
@@ -514,7 +515,7 @@ fun AddNewItem(
             withContext(Dispatchers.IO) {
                 try {
                     val uri = Uri.parse(imageRes)
-                     context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                    context.contentResolver.openInputStream(uri)?.use { inputStream ->
                         bitmap = BitmapFactory.decodeStream(inputStream)?.asImageBitmap()
                     }
                 } catch (e: Exception) {
@@ -535,7 +536,7 @@ fun AddNewItem(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_back), // Update your drawable
+                            painter = painterResource(id = R.drawable.ic_back),
                             contentDescription = "Back",
                             modifier = Modifier.padding(start = 4.dp, end = 4.dp),
                         )
@@ -545,7 +546,7 @@ fun AddNewItem(
         },
         bottomBar = {
             if (!isKeyboardOpen) {
-                BottomCartBar()           
+                BottomCartBar()
             }
         },
     ) { paddingValues ->
@@ -568,14 +569,16 @@ fun AddNewItem(
                         .padding(horizontal = 16.dp)
                         .clip(RoundedCornerShape(24.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .clickable {
-                            // 3. Launch the image picker when clicked
-                            photoPickerLauncher.launch(
-                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
-                            )
-                        },
+                        .clickable(
+                            enabled = imageRes.isEmpty(),
+                            onClick = {
+                                photoPickerLauncher.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                                )
+                            }
+                        ),
                 contentAlignment = Alignment.Center,
-            ) {              
+            ) {
                 if (bitmap != null) {
                     Image(
                         bitmap = bitmap!!,
@@ -583,6 +586,24 @@ fun AddNewItem(
                         contentScale = ContentScale.Fit,
                         modifier = Modifier.fillMaxSize(),
                     )
+                    
+               
+                    IconButton(
+                        onClick = { imageRes = "" },
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(8.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
+                                shape = CircleShape
+                            )
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_delete),
+                            contentDescription = "Delete Image",
+                            tint = MaterialTheme.colorScheme.error
+                        )                       
+                    }
                 } else {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -661,6 +682,7 @@ fun AddNewItem(
         }
     }
 }
+
 
 @Composable
 fun GitHubTokenScreen() {
