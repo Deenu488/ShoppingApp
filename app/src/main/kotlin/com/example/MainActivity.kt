@@ -451,6 +451,7 @@ fun Settings() {
 fun BottomCartBar(
     product: ProductDetails,
     imageRes: String,
+    onSaveSuccess: () -> Unit,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -493,31 +494,55 @@ fun BottomCartBar(
                 onClick = {
                     scope.launch(Dispatchers.IO) {
                         try {
-                            val safeTitle = product.name.replace(Regex("[^a-zA-Z0-9.-]"), "_")
+                            val safeTitle = product.name.ifBlank { "product" }.replace(Regex("[^a-zA-Z0-9.-]"), "_")
 
                             val baseDir = File(context.getExternalFilesDir(null), "products/not_uploaded")
                             if (!baseDir.exists()) {
                                 baseDir.mkdirs()
                             }
 
-                            val dir = File(baseDir, product.id)
-
+                            val productId = product.id ?: UUID.randomUUID().toString().take(6)
+                            val dir = File(baseDir, productId)
                             if (!dir.exists()) dir.mkdirs()
 
-                            val jsonFile = File(dir, "$safeTitle.json")
-                            val imageFile = File(dir, "$safeTitle.jpg")
-
                             var localImagePath = ""
+
                             if (imageRes.isNotEmpty()) {
-                                val uri = Uri.parse(imageRes)
-                                context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                                    FileOutputStream(imageFile).use { outputStream ->
-                                        inputStream.copyTo(outputStream)
+                                val imageFile = File(dir, "$safeTitle.jpg")
+
+                                if (imageRes.startsWith("content://") || imageRes.startsWith("file://")) {
+                                    dir.listFiles()?.forEach { it.delete() }
+                                    val uri = Uri.parse(imageRes)
+                                    context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                                        FileOutputStream(imageFile).use { outputStream ->
+                                            inputStream.copyTo(outputStream)
+                                        }
+                                    }
+                                    localImagePath = imageFile.absolutePath
+                                } else {
+                                    val sourceFile = File(imageRes)
+                                    if (sourceFile.exists()) {
+                                        val tempFile = File(context.cacheDir, "temp_${System.currentTimeMillis()}.jpg")
+                                        sourceFile.copyTo(tempFile, overwrite = true)
+
+                                        dir.listFiles()?.forEach { it.delete() }
+
+                                        tempFile.copyTo(imageFile, overwrite = true)
+                                        tempFile.delete()
+
+                                        localImagePath = imageFile.absolutePath
+                                    } else {
+                                        dir.listFiles()?.forEach { it.delete() }
+                                        localImagePath = imageRes
                                     }
                                 }
-                                localImagePath = imageFile.absolutePath
+                            } else {
+                                dir.listFiles()?.forEach { it.delete() }
+                                localImagePath = ""
                             }
-                            val productToSave = product.copy(imageRes = localImagePath)
+
+                            val jsonFile = File(dir, "$safeTitle.json")
+                            val productToSave = product.copy(id = productId, imageRes = localImagePath)
 
                             val gson = GsonBuilder().setPrettyPrinting().create()
                             val jsonString = gson.toJson(productToSave)
@@ -526,6 +551,7 @@ fun BottomCartBar(
 
                             withContext(Dispatchers.Main) {
                                 Toast.makeText(context, "Saved successfully!", Toast.LENGTH_SHORT).show()
+                                onSaveSuccess()
                             }
                         } catch (e: Exception) {
                             e.printStackTrace()
@@ -568,6 +594,15 @@ fun AddNewItem(
     var sp by remember(product) { mutableStateOf(product.sp) }
     var imageRes by remember(product) { mutableStateOf(product.imageRes) }
 
+    val productId =
+        remember(product) {
+            if (!product.id.isNullOrBlank()) {
+                product.id
+            } else {
+                UUID.randomUUID().toString().take(6)
+            }
+        }
+
     val context = LocalContext.current
     val isKeyboardOpen = WindowInsets.isImeVisible
 
@@ -586,13 +621,23 @@ fun AddNewItem(
     LaunchedEffect(imageRes) {
         if (imageRes.isNotEmpty()) {
             withContext(Dispatchers.IO) {
-                try {
-                    val uri = Uri.parse(imageRes)
-                    context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                        bitmap = BitmapFactory.decodeStream(inputStream)?.asImageBitmap()
+                if (imageRes.startsWith("content://") || imageRes.startsWith("file://")) {
+                    try {
+                        val uri = Uri.parse(imageRes)
+                        context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                            bitmap = BitmapFactory.decodeStream(inputStream)?.asImageBitmap()
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        bitmap = null
                     }
-                } catch (e: Exception) {
-                    bitmap = BitmapFactory.decodeFile(imageRes)?.asImageBitmap()
+                } else {
+                    try {
+                        bitmap = BitmapFactory.decodeFile(imageRes)?.asImageBitmap()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        bitmap = null
+                    }
                 }
             }
         } else {
@@ -621,14 +666,19 @@ fun AddNewItem(
             if (!isKeyboardOpen) {
                 val updatedProduct =
                     product.copy(
+                        id = productId,
                         name = name,
                         description = description,
                         mrp = mrp,
                         sp = sp,
-                        id = UUID.randomUUID().toString().take(6),
+                        imageRes = imageRes,
                     )
 
-                BottomCartBar(updatedProduct, imageRes)
+                BottomCartBar(
+                    product = updatedProduct,
+                    imageRes = imageRes,
+                    onSaveSuccess = onBack,
+                )
             }
         },
     ) { paddingValues ->
@@ -652,7 +702,6 @@ fun AddNewItem(
                         .clip(RoundedCornerShape(24.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                         .clickable(
-                            enabled = imageRes.isEmpty(),
                             onClick = {
                                 photoPickerLauncher.launch(
                                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
@@ -692,7 +741,7 @@ fun AddNewItem(
                         verticalArrangement = Arrangement.Center,
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_image_upload), // Update your drawable
+                            painter = painterResource(id = R.drawable.ic_image_upload),
                             contentDescription = "Upload Product Image",
                             modifier = Modifier.size(48.dp),
                         )
