@@ -94,6 +94,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
+import androidx.activity.compose.BackHandler 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -358,7 +359,38 @@ fun ShoppingItemCard(
                         .fillMaxWidth()
                         .padding(12.dp),
             ) {
-                Text(text = item.name)
+                Text(
+                    text = item.name,
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Text(
+                        text = "MRP: ₹${item.mrp}",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier =
+                            Modifier
+                                .background(
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    shape = RoundedCornerShape(8.dp),
+                                ).padding(horizontal = 8.dp, vertical = 4.dp),
+                    )
+
+                    Text(
+                        text = "SP: ₹${item.sp}",
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier =
+                            Modifier
+                                .background(
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    shape = RoundedCornerShape(8.dp),
+                                ).padding(horizontal = 8.dp, vertical = 4.dp),
+                    )
+                }
             }
         }
     }
@@ -588,6 +620,8 @@ fun AddNewItem(
     onBack: () -> Unit,
     isEdit: Boolean,
 ) {
+    BackHandler(onBack = onBack)
+    
     var name by remember(product) { mutableStateOf(product.name) }
     var description by remember(product) { mutableStateOf(product.description) }
     var mrp by remember(product) { mutableStateOf(product.mrp) }
