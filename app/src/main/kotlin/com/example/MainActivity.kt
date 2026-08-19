@@ -618,6 +618,7 @@ fun BottomCartBar(
 fun AddNewItem(
     product: ProductDetails = ProductDetails(),
     onBack: () -> Unit,
+    onDelete: () -> Unit = {},
     isEdit: Boolean,
 ) {
     BackHandler(onBack = onBack)
@@ -841,7 +842,21 @@ fun AddNewItem(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                 )
-
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Button(
+                        onClick = onDelete,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(text = "Delete Item")
+                    }
+                
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }
