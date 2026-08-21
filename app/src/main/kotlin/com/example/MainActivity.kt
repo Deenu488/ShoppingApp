@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.PickVisualMediaRequest
@@ -94,7 +95,6 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
-import androidx.activity.compose.BackHandler 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -403,6 +403,7 @@ fun Home(
     onCloseAddItem: () -> Unit,
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     var isEditMode by remember { mutableStateOf(false) }
     var selectedProduct by remember { mutableStateOf(ProductDetails()) }
@@ -441,6 +442,30 @@ fun Home(
             onBack = {
                 onCloseAddItem()
                 isEditMode = false
+            },
+            onDelete = {
+                scope.launch(Dispatchers.IO) {
+                    try {
+                        val productId = selectedProduct.id
+                        if (!productId.isNullOrBlank()) {
+                            val baseDir = File(context.getExternalFilesDir(null), "products/not_uploaded")
+                            val dir = File(baseDir, productId)
+                            if (dir.exists()) {
+                                dir.deleteRecursively()
+                            }
+                        }
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, "Item deleted successfully!", Toast.LENGTH_SHORT).show()
+                            onCloseAddItem()
+                            isEditMode = false
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, "Error deleting item: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
             },
         )
     } else {
@@ -622,7 +647,7 @@ fun AddNewItem(
     isEdit: Boolean,
 ) {
     BackHandler(onBack = onBack)
-    
+
     var name by remember(product) { mutableStateOf(product.name) }
     var description by remember(product) { mutableStateOf(product.description) }
     var mrp by remember(product) { mutableStateOf(product.mrp) }
@@ -842,21 +867,24 @@ fun AddNewItem(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                 )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                    
+
+                if (isEdit) {
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     Button(
                         onClick = onDelete,
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                            contentColor = MaterialTheme.colorScheme.onErrorContainer
-                        ),
-                        shape = RoundedCornerShape(12.dp)
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                            ),
+                        shape = RoundedCornerShape(12.dp),
                     ) {
                         Text(text = "Delete Item")
                     }
-                
+                }
+
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }
